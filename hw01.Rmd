@@ -1,0 +1,159 @@
+---
+title: "LF2649 HW01"
+output: github_document
+---
+
+```{r setup, include = FALSE}
+library(tidyverse)
+```
+
+#Import data
+```{r}
+hw1 = 
+  read_csv("./da_ILINet.csv") %>% 
+  janitor::clean_names()
+
+head(hw1)
+```
+
+#Question 1
+
+##1.1 What variables does the dataset contain?  How many weeks are included for each variable in the dataset? 
+```{r}
+colnames(hw1)
+ncol(hw1)
+nrow(hw1)
+
+```
+
+* This dataset contains `r ncol(hw1)` variables of `r colnames(hw1)`. 
+* `r nrow(hw1)` weeks have been included for each variable.
+
+##1.2 What state are you from? What was the ILI in the 2nd week of the season for your state?
+```{r}
+hw1 %>% 
+  select("date", "new_york_city") %>% 
+  filter(date == "2018-10-07") 
+
+```
+
+* I am from ourside of the USA.
+* The ILI in the 2nd week of the season in NYC is 1931. 
+
+##1.3 Suppose you store the dataset in a variable called ‘ili’.  What do the outputs from the following commands represent? 
+```{r}
+ili = hw1
+a = ili[2, 6]  
+# A represents the ILI in California on the 2nd week.
+
+b = hw1 [30, 5:14]
+colnames(b)
+# B represents the 30th week ILI in Arkansas, California, Colorado, Connecticut, Delaware, District of Columbia, Florida, Georgia, Hawaii, and Idaho. 
+
+c = ili [, 5]
+# C represents ILI in the whole season in Arkansas. 
+
+d = ili [36, "new_york_city"] 
+# D represents the ILI in NYC on the 36th week. 
+```
+
+
+##1.4 What are the mean and maximum ILI levels for New York City, respectively? [hint: you can use the ‘summary’ function to print the summary statistics for each column. Or use the function 'mean' and 'max' to get the results respectively.]
+```{r}
+hw1 %>% 
+  select("date", "new_york_city") %>% 
+  summary()
+
+```
+* The mean and maximum ILI levels for New York City are 2290 and 4383, respectively. 
+
+##1.5 When did New York City have its peak ILI (i.e. maximum ILI) that flu season?
+```{r}
+hw1 %>% 
+  select("date", "new_york_city") %>% 
+  filter(new_york_city == 4383)
+```
+* NYC had its peak ILI on 12/23/2018. 
+
+
+
+#Question 2
+## Plot the weekly ILI in New York City (column: New.York.City) over time.  (0.5pt) 
+```{r}
+weekly_nyc_plot = hw1 %>% 
+  select(date, new_york_city) %>% 
+  ggplot(aes(x = date, y = new_york_city)) + 
+  geom_smooth(se = FALSE) 
+
+weekly_nyc_plot
+  
+```
+
+#Question 3
+##New York City is in New York State. To compare ILI in NYC to that in NY State, superimpose the weekly ILI for NY State to the above plot (Q2). 
+```{r}
+hw1_tidy = 
+  hw1 %>% 
+  pivot_longer(
+    alabama:wyoming, 
+    names_to = "state",  
+    values_to = "ili") 
+
+nyc_ny_plot = 
+  hw1_tidy %>% 
+  filter(state %in% c("new_york", "new_york_city")) %>% 
+  ggplot(aes(x = date, y = ili, color = state)) + 
+  geom_smooth(se = FALSE)
+  
+nyc_ny_plot
+```
+
+#Question 4
+##Use boxplot to show the variation in ILI among all states/cities for each week in the last flu season. [hint: think of each week as a category, and each with ~54 data points for all the states/cities.] (0.5pt)
+```{r}
+weekly_box = 
+  hw1_tidy %>% 
+  mutate(date = as.character(date)) %>% 
+  ggplot(aes(x = date, y = ili)) + 
+  geom_boxplot()+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+weekly_box
+```
+
+#Question 5
+##Write a script in R to find the solutions for the following equations: (0.5pt)
+```{r}
+#a. 2x^2 + 10x + 3 = 0;
+delta_a = sqrt(10^2 - 4*2*3)
+x_a1 = (-10+delta_a)/2*2
+x_a2 = (-10-delta_a)/2*2
+
+#b. 5x^2 - 6x + 1 = 0;
+delta_b = sqrt(6^2 - 4*5*1)
+x_b1 = (6+delta_a)/2*5
+x_b2 = (6-delta_a)/2*5
+
+```
+
+* The solutions for equation a are `r x_a1` and `r x_a2`.
+* The solutions for equation b are `r x_b1` and `r x_b2`.
+
+#Question 6
+##To make implementation of Question 5 easier, create a function to find the solutions for any quadratic equation with constants a, b, and c.
+```{r}
+fn_sol_quadratic = function(a,b,c){
+  
+  delta = sqrt(b^2 - 4*a*c)
+  x_1 = (-b + delta)/2*a
+  x_2 = (-b - delta)/2*a
+  
+  return(slt = c(x_1, x_2))
+  
+}
+
+q5 = fn_sol_quadratic(2,10,3)
+q5
+
+```
+* We get the function as "fn_sol_quadratic".  
